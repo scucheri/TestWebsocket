@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>WebSocket Test</title>
+  </head>
+  <body>
+    <input type="text" id="messageInput" placeholder="输入消息" />
+    <button onclick="sendMessage()">发送</button>
+    <button onclick="closeConnection()">手动关闭连接</button>
+    <div id="messages"></div>
+
+    <script>
+      // 创建WebSocket连接
+      const socket = new WebSocket("ws://172.26.200.194:3000");
+
+      // 当连接打开时
+      socket.onopen = function (event) {
+        console.log("连接已建立");
+        socket.send("Hello Server!");
+      };
+
+      // 当接收到服务器消息时
+      socket.onmessage = function (event) {
+        const messages = document.getElementById("messages");
+        const message = document.createElement("p");
+        message.textContent = "收到: " + event.data;
+        messages.appendChild(message);
+      };
+
+      // 当连接关闭时
+      socket.onclose = function (event) {
+        if (event.wasClean) {
+          console.log("连接已正常关闭");
+        } else {
+          console.log("连接异常关闭");
+        }
+        console.log("Code: " + event.code + " Reason: " + event.reason);
+      };
+
+      // 错误处理
+      socket.onerror = function (error) {
+        console.error("WebSocket错误: ", error);
+      };
+
+      // 发送消息的函数
+      function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+        if (message) {
+          socket.send(message);
+          input.value = "";
+        }
+      }
+
+      // 当你想关闭连接时
+      function closeConnection() {
+        // 调用close方法，可选地传递一个状态码和一个原因
+        socket.close(1000, "客户端主动关闭连接");
+
+        // 注意：在调用close()之后，WebSocket实例的readyState将变为CLOSED，
+        // 并且你将无法再通过这个实例发送或接收消息。
+
+        // 如果你在close()之后还想使用这个WebSocket实例进行新的连接，
+        // 你需要创建一个新的WebSocket实例。
+      }
+    </script>
+  </body>
+</html>
